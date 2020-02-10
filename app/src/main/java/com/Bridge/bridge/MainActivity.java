@@ -1,15 +1,15 @@
 package com.Bridge.bridge;
 
-
-
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
@@ -19,19 +19,28 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.Bridge.bridge.Client.ClientThread;
+import com.Bridge.bridge.Client.SendThread;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
-
+    public static final int BUFSIZE=10000;
 
     private ImageView image;
     private Button camera;
     private Button gallery;
     private Button button;
-    private File file;
+
+    private String filePath;
+
+    private ClientThread mClientThread;
+
 
     private static final int CAMERA=0;
     private static final int GALLERY=1;
@@ -48,6 +57,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(mClientThread==null){
+            String serverIP="192.168.0.5";
+            if(serverIP.length()!=0){
+                mClientThread=new ClientThread(serverIP,mMainHandler);
+                mClientThread.start();
+
+            }
+
+        }
         verifyStoragePermissions(MainActivity.this);
         init();
 
@@ -88,35 +106,27 @@ public class MainActivity extends AppCompatActivity {
 
     View.OnClickListener cameraListener=new View.OnClickListener(){
         public void onClick(View v){
-            openCamera();
-        }
+            Intent intent= new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(intent,CAMERA);        }
     };
 
     View.OnClickListener galleryListener=new View.OnClickListener(){
         public void onClick(View v){
-            openGallery();
-        }
+            Intent intent=new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            //intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+            startActivityForResult(intent,GALLERY);        }
     };
     View.OnClickListener buttonListener=new View.OnClickListener(){
         public void onClick(View v){
-            SaveBitmaptoFile(bitmap,"pic");
+            //SaveBitmaptoFile(bitmap,"pic");
+            filePath=saveBitmapToJpeg(getApplicationContext(),bitmap,"pic");
+            SocketConnect();
+
         }
     };
 
-
-
-    private void openCamera(){
-        Intent intent= new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent,CAMERA);
-    }
-
-    private void openGallery(){
-        Intent intent=new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        //intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
-        startActivityForResult(intent,GALLERY);
-    }
 
 
 
@@ -147,31 +157,58 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //bitmap to image --> goto SDcard storage
-    //저장소:stroage/emulated/0/MyDir
-    public static void SaveBitmaptoFile(Bitmap bitmap,String name){
-        String path= Environment.getExternalStorageDirectory().getAbsolutePath();
-        path+="/MyDir/";
-        File file=new File(path);
-        System.out.println(path);
-        if(!file.exists())
-            file.mkdirs();
+    public static String saveBitmapToJpeg(Context context,Bitmap bitmap, String name){
+        File storage=context.getCacheDir();
+        String fileName=name+".jpeg";
 
-        OutputStream os=null;
+        File tempFile=new File(storage,fileName);
 
         try{
-            file.createNewFile();
-            os=new FileOutputStream(path+"/pic.jpg");
-            bitmap.compress(Bitmap.CompressFormat.JPEG,100,os);
-            os.close();
-            ///path+="/pic.jpeg";
-            //   file=new File(path);
-        }catch(Exception e){
+            tempFile.createNewFile();
+            FileOutputStream out=new FileOutputStream(tempFile);
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG,90,out);
+            out.close();
+        }catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e){
             e.printStackTrace();
         }
+        return tempFile.getAbsolutePath();
+    }
+    public void SocketConnect(){
+
+        if(SendThread.mHandler!=null){
+            System.out.println("here!!!!!!!!");
+            Message msg=Message.obtain();
+            File file=new File(filePath);
+            byte[] sendData=bitmapToByteArray(bitmap);
+            msg.what=1;
+            msg.obj=sendData;
+
+            //data
+            SendThread.mHandler.sendMessage(msg);
+            System.out.println("hello");
+        }
+    }
+
+
+    private Handler mMainHandler=new Handler(){
+        public void handlerMessage(Message msg){
+            switch(msg.what){
+                case 1:
+                    //data print
+            }
+        }
+    };
 
 
 
+
+    public byte[] bitmapToByteArray(Bitmap bitmap){
+        ByteArrayOutputStream stream=new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+        byte[] byteArray =stream.toByteArray();
+        return byteArray;
     }
 }
-
