@@ -4,10 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 public class SendThread extends Thread {
@@ -28,15 +25,15 @@ public class SendThread extends Thread {
                 switch (msg.what){
                     case 1:
                         try{
-                            //String s=(String) msg.obj;
-                            ByteArrayOutputStream bos=new ByteArrayOutputStream();
-                            ObjectOutput out=new ObjectOutputStream(bos);
-                            out.writeObject(msg.obj);//Object to byteArray
-                            byte[] s=bos.toByteArray();
+                            String s=(String) msg.obj;
+                            //ByteArrayOutputStream bos=new ByteArrayOutputStream();
+                            //ObjectOutput out=new ObjectOutputStream(bos);
+                            //out.writeObject(msg.obj);//Object to byteArray
+                            //byte[] s=bos.toByteArray();
 
 
-                            mOutStream.write(s);
-                            mClientThread.doPrintln(s.toString());
+                            mOutStream.write(s.getBytes());
+                            mClientThread.doPrintln(s);
                         }catch(IOException e){
                             mClientThread.doPrintln(e.getMessage());
                         }

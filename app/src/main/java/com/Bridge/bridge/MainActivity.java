@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if(mClientThread==null){
-            String serverIP="192.168.0.5";
+            String serverIP="192.168.0.4";
             if(serverIP.length()!=0){
                 mClientThread=new ClientThread(serverIP,mMainHandler);
                 mClientThread.start();
@@ -182,10 +183,12 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("here!!!!!!!!");
             Message msg=Message.obtain();
             File file=new File(filePath);
-            byte[] sendData=bitmapToByteArray(bitmap);
+           // byte[] sendData=bitmapToByteArray(bitmap);
+            String sendData=bitmapToString(bitmap);
+            sendData+="}";
             msg.what=1;
             msg.obj=sendData;
-
+            System.out.println(sendData+"}");
             //data
             SendThread.mHandler.sendMessage(msg);
             System.out.println("hello");
@@ -210,5 +213,15 @@ public class MainActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
         byte[] byteArray =stream.toByteArray();
         return byteArray;
+    }
+    public String bitmapToString(Bitmap bitmap){
+        ByteArrayOutputStream stream=new ByteArrayOutputStream();
+
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+        byte[] image = stream.toByteArray();
+        String profileImageBase64 = Base64.encodeToString(image, 0);
+
+        return profileImageBase64;
     }
 }
