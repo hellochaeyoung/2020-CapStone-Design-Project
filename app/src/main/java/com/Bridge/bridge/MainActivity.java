@@ -214,11 +214,12 @@ public class MainActivity extends AppCompatActivity {
         byte[] byteArray =stream.toByteArray();
         return byteArray;
     }
+
+
+
     public String bitmapToString(Bitmap bitmap){
         ByteArrayOutputStream stream=new ByteArrayOutputStream();
-
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
         byte[] image = stream.toByteArray();
         String profileImageBase64 = Base64.encodeToString(image, 0);
 
