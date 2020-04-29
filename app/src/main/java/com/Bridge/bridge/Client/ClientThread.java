@@ -15,6 +15,7 @@ public class ClientThread extends Thread {
     public ClientThread(String servAdder,Handler mainHandler){
         mServAddr=servAdder;
         mMainHandler=mainHandler;
+
     }
 
     public void run(){
