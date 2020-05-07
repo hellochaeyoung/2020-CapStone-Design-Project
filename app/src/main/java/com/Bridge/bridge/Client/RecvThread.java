@@ -23,12 +23,14 @@ public class RecvThread extends Thread {
                 if(nbytes>0){
                     String s=new String(buf,0,nbytes);
                     mClientThread.doPrintln(s);
+                    System.out.println("OK");
                 }else{
                     mClientThread.doPrintln("unConnect");
                     if(SendThread.mHandler!=null){
                         Message msg= Message.obtain();
                         msg.what=2;
                         SendThread.mHandler.sendMessage(msg);
+                        System.out.println("NO");
                     }
                     break;
                 }
