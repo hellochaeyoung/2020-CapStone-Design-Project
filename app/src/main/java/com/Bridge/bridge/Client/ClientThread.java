@@ -45,10 +45,11 @@ public class ClientThread extends Thread {
         }
     }
 
-    public void doPrintln(String str){
-        Message msg=Message.obtain();
-        msg.what=1;
-        msg.obj=str+"\n";
+    public void doPrintln(String str) {
+        Message msg = Message.obtain();
+        msg.what = 1;
+        msg.obj = str + "\n";
         mMainHandler.sendMessage(msg);
     }
+
 }

@@ -35,6 +35,7 @@ import java.io.InputStream;
 public class MainActivity extends AppCompatActivity {
     public static final int BUFSIZE=10000;
 
+    public static boolean isFinish=false;
     private ImageView image;
     private Button camera;
     private Button gallery;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String filePath;
 
-    private ClientThread mClientThread;
+    public ClientThread mClientThread;
 
 
     private static final int CAMERA=0;
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if(mClientThread==null){
-            String serverIP="192.168.0.4";
+            String serverIP="172.16.100.35";
             if(serverIP.length()!=0){
                 mClientThread=new ClientThread(serverIP,mMainHandler);
                 mClientThread.start();
@@ -69,10 +70,17 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+
         verifyStoragePermissions(MainActivity.this);
         init();
 
-
+        while(true){
+            if(isFinish==true){
+                Intent intent = new Intent(MainActivity.this, RecvActivity.class);
+                startActivity(intent);
+                break;
+            }
+        }
 
 
     }
@@ -118,6 +126,12 @@ public class MainActivity extends AppCompatActivity {
         gallery.setOnClickListener(galleryListener);
         button.setOnClickListener(buttonListener);
 
+        byte[] b=new byte[1000];
+        b="}".getBytes();
+        for(int i=0;i<b.length;i++){
+            System.out.println(b[i]+" ");
+        }
+
     }
 
 
@@ -135,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
             //intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
             startActivityForResult(intent,GALLERY);        }
     };
+
+
     View.OnClickListener buttonListener=new View.OnClickListener(){
         public void onClick(View v){
             //SaveBitmaptoFile(bitmap,"pic");
@@ -171,13 +187,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-    }
+    };
 
 
     public static String saveBitmapToJpeg(Context context,Bitmap bitmap, String name){
         File storage=context.getCacheDir();
         String fileName=name+".jpeg";
-
+        //draw.jpeg;
         File tempFile=new File(storage,fileName);
 
         try{
@@ -193,6 +209,8 @@ public class MainActivity extends AppCompatActivity {
         }
         return tempFile.getAbsolutePath();
     }
+
+
     public void SocketConnect(){
 
         if(SendThread.mHandler!=null){

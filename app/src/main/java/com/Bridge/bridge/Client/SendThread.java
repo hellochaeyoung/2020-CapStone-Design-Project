@@ -13,6 +13,7 @@ public class SendThread extends Thread {
     private OutputStream mOutStream;
     public static Handler mHandler;
 
+
     public SendThread(ClientThread clientThread, OutputStream outputStream){
         mClientThread=clientThread;
         mOutStream=outputStream;
