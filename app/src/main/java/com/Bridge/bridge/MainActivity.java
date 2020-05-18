@@ -43,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String filePath;
 
-    public ClientThread mClientThread;
+    public  ClientThread mClientThread;
+
 
 
     private static final int CAMERA=0;
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if(mClientThread==null){
-            String serverIP="172.16.100.35";
+            String serverIP="192.168.1.53";
             if(serverIP.length()!=0){
                 mClientThread=new ClientThread(serverIP,mMainHandler);
                 mClientThread.start();
@@ -71,16 +72,11 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+
+
         verifyStoragePermissions(MainActivity.this);
         init();
 
-        while(true){
-            if(isFinish==true){
-                Intent intent = new Intent(MainActivity.this, RecvActivity.class);
-                startActivity(intent);
-                break;
-            }
-        }
 
 
     }
@@ -97,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
 
     }
+
 
 
     public static void verifyStoragePermissions(Activity activity) {
@@ -126,11 +123,6 @@ public class MainActivity extends AppCompatActivity {
         gallery.setOnClickListener(galleryListener);
         button.setOnClickListener(buttonListener);
 
-        byte[] b=new byte[1000];
-        b="}".getBytes();
-        for(int i=0;i<b.length;i++){
-            System.out.println(b[i]+" ");
-        }
 
     }
 
@@ -230,11 +222,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private Handler mMainHandler=new Handler(){
-        public void handlerMessage(Message msg){
+    public Handler mMainHandler=new Handler(){
+        public void handleMessage(Message msg){
+            System.out.println("no handler??");
             switch(msg.what){
                 case 1:
+
+                    System.out.println("@@@@@@@@@@@@@@@@");
+                    break;
+
+                case 3: System.out.println("hi here");
+                    Intent intent = new Intent(MainActivity.this, RecvActivity.class);
+                    startActivity(intent);
+                    break;
+
                     //data print
+
             }
         }
     };

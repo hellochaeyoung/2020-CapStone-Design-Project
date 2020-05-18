@@ -43,21 +43,30 @@ public class RecvThread extends Thread {
 
 
                    // System.out.println(buf.toString());
-                    recvString+=s;
+                    //recvString+=s;
                     System.arraycopy(buf,0,arr,index,nbytes);
                     index+=nbytes;
 
                     if(buf[nbytes-1]==125 && buf[nbytes-2]==125 && buf[nbytes-3]==125) {
                         System.out.println("OK");
                         //File file = new File(Environment.DIRECTORY_DOCUMENTS+"/test.pptx");
-                        File file = new File("/sdcard/Documents/test.pptx");
+                        File file = new File("/sdcard/Download/test.pptx");
 
                         FileOutputStream fos=new FileOutputStream(file);
                         fos.write(arr);
                         fos.close();
-                        MainActivity.isFinish=true;
+                        mClientThread.doPrintln("finish");
 
-                        System.out.println(new String(arr,0,index));
+                        // Message msg= Message.obtain();
+                        //msg.what=1;
+
+                        if(SendThread.mHandler!=null) {
+                            Message msg = Message.obtain();
+                            msg.what = 2;
+                            SendThread.mHandler.sendMessage(msg);
+                            System.out.println("null SendThread");
+                        }
+                        MainActivity.isFinish=true;
 
                         break;
                     }

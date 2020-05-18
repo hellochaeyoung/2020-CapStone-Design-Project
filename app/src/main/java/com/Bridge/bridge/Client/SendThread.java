@@ -33,6 +33,8 @@ public class SendThread extends Thread {
                             //byte[] s=bos.toByteArray();
 
 
+
+                            System.out.println("SendThread here");
                             mOutStream.write(s.getBytes());
                             mClientThread.doPrintln(s);
                         }catch(IOException e){

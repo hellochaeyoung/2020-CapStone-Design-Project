@@ -11,7 +11,6 @@ public class ClientThread extends Thread {
     private Handler mMainHandler;
     public static boolean isRun=false;
 
-
     public ClientThread(String servAdder,Handler mainHandler){
         mServAddr=servAdder;
         mMainHandler=mainHandler;
@@ -30,6 +29,7 @@ public class ClientThread extends Thread {
             isRun=true;
             sendThread.join();
             recvThread.join();
+
         }catch(Exception e){
             e.printStackTrace();
         }finally {
@@ -46,10 +46,20 @@ public class ClientThread extends Thread {
     }
 
     public void doPrintln(String str) {
-        Message msg = Message.obtain();
-        msg.what = 1;
-        msg.obj = str + "\n";
-        mMainHandler.sendMessage(msg);
-    }
+        if (str.equals("finish")) {
+            Message fmsg = Message.obtain();
+            fmsg.what = 3;
+            fmsg.obj = str + "\n";
+            mMainHandler.sendMessage(fmsg);
+            System.out.println("finish message oK");
 
+        } else {
+            System.out.println("Client Thread here" + str);
+            Message msg = Message.obtain();
+            msg.what = 1;
+            msg.obj = str + "\n";
+            mMainHandler.sendMessage(msg);
+        }
+
+    }
 }
