@@ -52,6 +52,8 @@ public class RecvThread extends Thread {
                         //File file = new File(Environment.DIRECTORY_DOCUMENTS+"/test.pptx");
                         File file = new File("/sdcard/Download/test.pptx");
 
+
+
                         FileOutputStream fos=new FileOutputStream(file);
                         fos.write(arr);
                         fos.close();

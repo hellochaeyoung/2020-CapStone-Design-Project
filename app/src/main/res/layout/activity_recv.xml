@@ -42,33 +42,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.5"
-                android:orientation="vertical"></LinearLayout>
-
-            <Button
-                android:id="@+id/button"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:background="@drawable/button_round"
-                android:text="저장하기" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.5"
-                android:orientation="vertical"></LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
             android:layout_weight="0.5"
             android:orientation="vertical"></LinearLayout>
 
@@ -87,12 +60,13 @@
             </LinearLayout>
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/App"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
                 android:background="@drawable/button_round"
-                android:text="앱으로 열기" />
+                android:text="앱으로 열기"
+                android:textSize="24sp" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -120,12 +94,13 @@
                 android:orientation="vertical"></LinearLayout>
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/Share"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
                 android:background="@drawable/button_round"
-                android:text="공유하기" />
+                android:text="공유하기"
+                android:textSize="24sp" />
 
             <LinearLayout
                 android:layout_width="0dp"
