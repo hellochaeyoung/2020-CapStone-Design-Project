@@ -12,8 +12,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -63,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if(mClientThread==null){
-            String serverIP="192.168.1.53";
+            String serverIP="192.168.0.75";
             if(serverIP.length()!=0){
                 mClientThread=new ClientThread(serverIP,mMainHandler);
                 mClientThread.start();
@@ -78,19 +76,6 @@ public class MainActivity extends AppCompatActivity {
         init();
 
 
-
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.actionbar_action,menu);
-        return true;
-    }
-    public boolean onOptionsItemSelected( MenuItem item){
-        Intent intent=new Intent(MainActivity.this, MyActivity.class);
-        startActivity(intent);
-
-        finish();
-        return super.onOptionsItemSelected(item);
 
     }
 
@@ -234,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 case 3: System.out.println("hi here");
                     Intent intent = new Intent(MainActivity.this, RecvActivity.class);
                     startActivity(intent);
+
                     break;
 
                     //data print

@@ -20,6 +20,7 @@ public class RecvActivity extends BaseActivity {
 
     Button sharebtn;
     Button openbtn;
+    Button backbtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,11 +34,21 @@ public class RecvActivity extends BaseActivity {
     public void initButton(){
         sharebtn = findViewById(R.id.Share);
         openbtn = findViewById(R.id.App);
+        backbtn = findViewById(R.id.Back);
 
         sharebtn.setOnClickListener(shareListener);
         openbtn.setOnClickListener(openListener);
+        backbtn.setOnClickListener(backListener);
 
     }
+    public View.OnClickListener backListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View v){
+            Intent intent = new Intent(RecvActivity.this, FirstActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    };
 
     public View.OnClickListener openListener = new View.OnClickListener() {
         @Override
@@ -47,7 +58,9 @@ public class RecvActivity extends BaseActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setAction(Intent.ACTION_VIEW);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.setDataAndType(Uri.fromFile(file), "application/vnd.ms-powerpoint");
+            intent.setDataAndType(Uri.fromFile(file), "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+            //
+
             try{
                 startActivity(intent);
 
@@ -70,7 +83,7 @@ public class RecvActivity extends BaseActivity {
 
         final Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);           // 단일파일 보내기
-        intent.setType("application/excel");    // 엑셀파일 공유 시
+        intent.setType("application/vnd.openxmlformats-officedocument.presentationml.presentation");    // 엑셀파일 공유 시
         Uri contentUri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".fileprovider", shareFile);
         intent.putExtra(Intent.EXTRA_STREAM, contentUri);
         // intent.setType("*/*");        // 모든 공유 형태 전달

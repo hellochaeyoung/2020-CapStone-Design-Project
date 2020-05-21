@@ -12,7 +12,6 @@ public class FirstActivity extends AppCompatActivity {
 
 
     private TextView toPPT;
-    private TextView toMY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +28,7 @@ public class FirstActivity extends AppCompatActivity {
         toPPT=findViewById(R.id.toPPT);
         toPPT.setOnClickListener(pptListener);
 
-        toMY=findViewById(R.id.toMY);
-        toMY.setOnClickListener(myListener);
+
     }
 
     public View.OnClickListener pptListener= new View.OnClickListener() {
@@ -42,11 +40,5 @@ public class FirstActivity extends AppCompatActivity {
         }
     };
 
-    public View.OnClickListener myListener=new View.OnClickListener(){
-        public void onClick(View v){
 
-            Intent intent=new Intent(FirstActivity.this, MyActivity.class);
-            startActivity(intent);
-        }
-    };
 }
