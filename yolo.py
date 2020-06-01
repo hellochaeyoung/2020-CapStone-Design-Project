@@ -34,7 +34,7 @@ import matplotlib as mpl
 #    grad_y = cv2.Sobel(image, cv2.CV_32F, 0, 1 ,ksize=kernel_size)
 #    
 #    grad = grad_x + 1j*grad_y
-    
+#   
 #    return grad
 
 # Load Yolo
@@ -208,27 +208,76 @@ for i in range(len(boxes)):
             
             centerx = value_x/7
             centery = value_y/7
+            print(approx_corners)
+            print("centerx : ", centerx)
+            print("centery : ", centery)
             
-            #무게중심에서 가장 먼 점을 꼭지점으로 계산
-            max_distancex = 0
-            max_distancey = 0
+            #무게중심에서 가장 가까운 두 점 계산
+            min_distancex1 = 0
+            min_distancey1 = 0
+            min_distance1 = 1000000
             for i in approx_corners:
-                a,b = i.ravel()
-                max_distance = 0
+                a,b = np.ravel(i)
                 distance = math.sqrt(math.pow((centerx-a),2) + math.pow((centery-b),2))
-                if distance > max_distance:
-                    max_distance = distance
-                    max_distancex = a
-                    max_distancey = b
-           
-            #기울기 구하기
-            gradient = (max_distancey-centery)/(max_distancex-centerx)
-            degree = np.arctan(gradient)
+                if distance < min_distance1:
+                    min_distance1 = distance
+                    min_distancex1 = a
+                    min_distancey1 = b
             
+            distance1 = np.array([min_distancex1, min_distancey1])
             
-            shape = shapes.add_shape(MSO_SHAPE.LEFT_ARROW, Cm(x)/50, Cm(y)/50 , Cm(w)/50, Cm(h)/50)
-            shape._element.rot = gradient
+            print("min_distancex1 : ", min_distancex1)
+            print("min_distancey1 : ", min_distancey1)
+               
+            min_distancex2 = 0
+            min_distancey2 = 0
+            min_distance2 = 100000
+            for i in approx_corners:
+                a,b = np.ravel(i)
+                distance = math.sqrt(math.pow((centerx-a),2) + math.pow((centery-b),2))
+                if distance < min_distance2:
+                    if a==min_distancex1 and b==min_distancey1:
+                        continue
+                    min_distance2 = distance
+                    min_distancex2 = a
+                    min_distancey2 = b
+                    
+            distance2 = np.array([min_distancex2, min_distancey2])
             
+            print("min_distancex2 : ", min_distancex2)
+            print("min_distancey2 : ", min_distancey2)
+            
+            center = np.array([centerx,centery])
+            
+            z1 = [i-j for i,j in zip(distance1, center)]
+            z2 = [i-j for i,j in zip(distance2, center)]
+            
+            print("z1 : ", z1)
+            print("z2 : ", z2)
+            
+            #벡터 연산
+            vector = [i+j for i,j in zip(z1,z2)]
+            a, b = np.ravel(vector)
+            
+            print("vector : ", vector)
+            
+            reference = np.array([1,0])
+            vector = np.array([a,-b])
+        
+            
+            vector_size = math.sqrt(math.pow((a),2) + math.pow((b),2))
+            cosinseta = np.dot(vector, reference) / vector_size
+            print("cosinseta : ", cosinseta)
+            
+
+            degree = np.arccos(cosinseta)
+            degree = np.rad2deg(degree)
+            print("degree : ", degree)
+            
+            shape = shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Cm(x)/50, Cm(y)/50 , Cm(w)/50, Cm(h)/50)
+            #rotate clockwise
+            
+            shape.rotation = - degree
             
             shape.fill.background()
             shape.shadow.inherit = False
@@ -238,7 +287,7 @@ for i in range(len(boxes)):
                          
              #Shi-Tomasi corner detection algorithm
             #corners = cv2.goodFeaturesToTrack(mask, 7, 0.01, 4)
-            #corners = np.int0(corners)            
+            #corners = np.int0(corners)
             #for i in corners:
             #    a,b = i.ravel()
             #    cv2.circle(mask1, (a,b), 2, 255, -1)
@@ -249,8 +298,7 @@ for i in range(len(boxes)):
             #    approx = cv2.approxPolyDP(cnt, epsilon, True)
             #    cv2.drawContours(mask, [approx], -1, (0,0,0), 3)
 
-            
-            
+   
             #ret, img_binary = cv2.threshold(gray, 127, 255, 0)
             #img_binary, contours, hierarchy = cv2.findContours(img_binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
             
@@ -258,7 +306,6 @@ for i in range(len(boxes)):
             s=str(i)
             cv2.imwrite('C:/Users/Administrator/Result/1' + s + '.jpg',mask)
             cv2.imwrite('C:/Users/Administrator/Result/2' + s + '.jpg',mask1)
-            
             
         if label == "arrow2":
             
@@ -280,12 +327,12 @@ for i in range(len(boxes)):
             
             
             #Ramer-Douglas-Peucker algorithm
-            epsilon = 0.06 * cv2.arcLength(cnt,True)
+            epsilon = 0.062 * cv2.arcLength(cnt,True)
             approx_corners = cv2.approxPolyDP(cnt, epsilon, True)
             cv2.drawContours(mask1, approx_corners, -1, (0,0,0), 6)
             
             approx_corners = sorted(np.concatenate(approx_corners).tolist())
-            approx_corners = [approx_corners[i] for i in [0, 1, 2, 3, 4, 5]]
+            approx_corners = [approx_corners[i] for i in [0, 1, 2, 3, 4]]
             
             #무게중심
             value_x = 0
@@ -295,29 +342,87 @@ for i in range(len(boxes)):
                 value_x = value_x + a
                 value_y = value_y + b
             
-            centerx = value_x/7
-            centery = value_y/7
+            centerx = value_x/5
+            centery = value_y/5
             
-            #무게중심에서 가장 먼 점을 꼭지점으로 계산
-            max_distancex = 0
-            max_distancey = 0
+            
+            print(approx_corners)
+            print("centerx : ", centerx)
+            print("centery : ", centery)
+            
+            #무게중심에서 가장 가까운 두 점 계산
+            min_distancex1 = 0
+            min_distancey1 = 0
+            min_distance1 = 1000000
             for i in approx_corners:
-                a,b = i.ravel()
-                max_distance = 0
+                a,b = np.ravel(i)
                 distance = math.sqrt(math.pow((centerx-a),2) + math.pow((centery-b),2))
-                if distance > max_distance:
-                    max_distance = distance
-                    max_distancex = a
-                    max_distancey = b
-           
-            #기울기 구하기
-            gradient = (max_distancey-centery)/(max_distancex-centerx)
-            degree = np.arctan(gradient)
+                if distance < min_distance1:
+                    min_distance1 = distance
+                    min_distancex1 = a
+                    min_distancey1 = b
+            
+            real_distance1 = math.sqrt(math.pow((centerx-min_distancex1),2) + math.pow((centery-min_distancey1),2))
+            distance1 = np.array([min_distancex1, min_distancey1])
+            
+            print("min_distancex1 : ", min_distancex1)
+            print("min_distancey1 : ", min_distancey1)
+               
+            min_distancex2 = 0
+            min_distancey2 = 0
+            min_distance2 = 100000
+            min_difference = 100000
+            difference = 0
+            for i in approx_corners:
+                a,b = np.ravel(i)
+                distance = math.sqrt(math.pow((centerx-a),2) + math.pow((centery-b),2))
+                difference = abs(distance - real_distance1)
+                if difference < min_difference:
+                    if a==min_distancex1 and b==min_distancey1:
+                        continue
+                    min_distance2 = distance
+                    min_difference = difference
+                    min_distancex2 = a
+                    min_distancey2 = b
+                    print("difference : ", difference)
+                    
+            distance2 = np.array([min_distancex2, min_distancey2])
+            
+            print("min_distancex2 : ", min_distancex2)
+            print("min_distancey2 : ", min_distancey2)
+            
+            center = np.array([centerx,centery])
+            
+            z1 = [i-j for i,j in zip(distance1, center)]
+            z2 = [i-j for i,j in zip(distance2, center)]
+            
+            print("z1 : ", z1)
+            print("z2 : ", z2)
+            
+            #벡터 연산
+            vector = [i+j for i,j in zip(z1,z2)]
+            a, b = np.ravel(vector)
+            
+            print("vector : ", vector)
+            
+            reference = np.array([1,0])
+            vector = np.array([a,-b])
+        
+            
+            vector_size = math.sqrt(math.pow((a),2) + math.pow((b),2))
+            cosinseta = np.dot(vector, reference) / vector_size
+            print("cosinseta : ", cosinseta)
+            
+
+            degree = np.arccos(cosinseta)
+            degree = np.rad2deg(degree)
+            print("degree : ", degree)
             
             
-            shape = shapes.add_shape(MSO_SHAPE.LEFT_ARROW, Cm(x)/50, Cm(y)/50 , Cm(w)/50, Cm(h)/50)
-            shape._element.rot = gradient
+            shape = shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Cm(x)/50, Cm(y)/50 , Cm(w)/50, Cm(h)/50)
             
+            #rotate clockwise
+            shape.rotation = -degree
             
             shape.fill.background()
             shape.shadow.inherit = False
@@ -360,10 +465,6 @@ for i in range(len(boxes)):
         #   
         #    s=str(i)
         #    cv2.imwrite('C:/Users/Administrator/Result/1' + s + '.jpg',gray)
-            
-            
-
-
     
 presentation.save('C:/Users/Administrator/test.pptx')
 
