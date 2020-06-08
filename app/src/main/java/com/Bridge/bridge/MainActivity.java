@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    CustomDialogFragment dialogFragment = CustomDialogFragment.newInstance("no");
 
     private Bitmap bitmap;
 
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if(mClientThread==null){
-            String serverIP="192.168.0.75";
+            String serverIP="223.194.132.166";
             if(serverIP.length()!=0){
                 mClientThread=new ClientThread(serverIP,mMainHandler);
                 mClientThread.start();
@@ -132,8 +133,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v){
             //SaveBitmaptoFile(bitmap,"pic");
             filePath=saveBitmapToJpeg(getApplicationContext(),bitmap,"pic");
+            dialogFragment.show(getSupportFragmentManager(),"dialog");
             SocketConnect();
-
         }
     };
 
@@ -217,8 +218,10 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 3: System.out.println("hi here");
+                    dialogFragment.dismiss();
                     Intent intent = new Intent(MainActivity.this, RecvActivity.class);
                     startActivity(intent);
+                    finish();
 
                     break;
 
