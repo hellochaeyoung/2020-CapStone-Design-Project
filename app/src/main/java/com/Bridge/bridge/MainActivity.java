@@ -7,7 +7,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -19,6 +23,7 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 
 import com.Bridge.bridge.Client.ClientThread;
 import com.Bridge.bridge.Client.SendThread;
@@ -29,6 +34,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     public static final int BUFSIZE=10000;
@@ -43,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
     public  ClientThread mClientThread;
 
+    private File file;
+    private Uri photoUri;
+    private String imageFilePath;
 
 
     private static final int CAMERA=0;
@@ -61,8 +71,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        File sdcard = Environment.getExternalStorageDirectory();
+        file = new File(sdcard,"capture.jpg");
         if(mClientThread==null){
-            String serverIP="223.194.132.166";
+            String serverIP="223.194.152.65";
             if(serverIP.length()!=0){
                 mClientThread=new ClientThread(serverIP,mMainHandler);
                 mClientThread.start();
@@ -114,11 +126,31 @@ public class MainActivity extends AppCompatActivity {
 
 
     View.OnClickListener cameraListener=new View.OnClickListener(){
-        public void onClick(View v){
-            Intent intent= new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(intent,CAMERA);        }
+        public void onClick(View v) {
+            sendTakePhotoIntent();
+        }
+
     };
 
+    private void sendTakePhotoIntent(){
+        Intent photoIntent= new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(photoIntent.resolveActivity(getPackageManager())!=null){
+            File photoFile = null;
+            try{
+                photoFile = createImageFile();
+            }catch (IOException ex){
+                System.out.println("error in camera button");
+            }
+            if(photoFile != null){
+                photoUri = FileProvider.getUriForFile(this, getPackageName(),photoFile);
+                photoIntent.putExtra(MediaStore.EXTRA_OUTPUT,photoUri);
+
+                startActivityForResult(photoIntent,CAMERA);
+            }
+        }
+        // startActivityForResult(intent,CAMERA);
+
+    }
     View.OnClickListener galleryListener=new View.OnClickListener(){
         public void onClick(View v){
             Intent intent=new Intent();
@@ -132,8 +164,8 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener buttonListener=new View.OnClickListener(){
         public void onClick(View v){
             //SaveBitmaptoFile(bitmap,"pic");
-            filePath=saveBitmapToJpeg(getApplicationContext(),bitmap,"pic");
             dialogFragment.show(getSupportFragmentManager(),"dialog");
+            filePath=saveBitmapToJpeg(getApplicationContext(),bitmap,"pic");
             SocketConnect();
         }
     };
@@ -150,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     InputStream in = getContentResolver().openInputStream(data.getData());
                     bitmap = BitmapFactory.decodeStream(in);
                     in.close();
+                   // bitmap = ImageUtils.getInstant().getCompressedBitmap()
                     image.setImageBitmap(bitmap);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -157,9 +190,37 @@ public class MainActivity extends AppCompatActivity {
 
             }
             if (requestCode == CAMERA) {
-                Bundle bundle = data.getExtras();
-                bitmap = (Bitmap) bundle.get("data");
-                image.setImageBitmap(bitmap);
+               // Bundle bundle = data.getExtras();
+               // BitmapFactory.Options options = new BitmapFactory.Options();
+                //options.inSampleSize = 8;
+                // bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(),options);
+
+//                bitmap = (Bitmap) bundle.get("data");
+//                image.setImageBitmap(bitmap);
+               // image.setImageURI(photoUri);
+
+                // bitmap = BitmapFactory.decodeFile(imageFilePath);
+                bitmap = ImageUtils.getInstant().getCompressedBitmap(imageFilePath);
+
+                ExifInterface exif = null;
+
+                try {
+                    exif = new ExifInterface(imageFilePath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                int exifOrientation;
+                int exifDegree;
+
+                if (exif != null) {
+                    exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                    exifDegree = exifOrientationToDegrees(exifOrientation);
+                } else {
+                    exifDegree = 0;
+                }
+                image.setImageBitmap(rotate(bitmap, exifDegree));
+
             }
 
         }
@@ -170,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static String saveBitmapToJpeg(Context context,Bitmap bitmap, String name){
         File storage=context.getCacheDir();
-        String fileName=name+".jpeg";
+        String fileName=name+".jpg";
         //draw.jpeg;
         File tempFile=new File(storage,fileName);
 
@@ -241,6 +302,31 @@ public class MainActivity extends AppCompatActivity {
         return byteArray;
     }
 
+    public File createImageFile() throws IOException{
+        String timeStamp = new SimpleDateFormat("yyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "TEST_" +timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(imageFileName,".jpg",storageDir);
+        imageFilePath = image.getAbsolutePath();
+        return image;
+
+    }
+    private int exifOrientationToDegrees(int exifOrientation) {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            return 90;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            return 180;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            return 270;
+        }
+        return 0;
+    }
+
+    private Bitmap rotate(Bitmap bitmap, float degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
 
 
     public String bitmapToString(Bitmap bitmap){
